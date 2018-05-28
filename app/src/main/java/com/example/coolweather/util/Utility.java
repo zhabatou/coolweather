@@ -2,10 +2,13 @@ package com.example.coolweather.util;
 
 import android.app.ProgressDialog;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.example.coolweather.db.City;
 import com.example.coolweather.db.Country;
 import com.example.coolweather.db.Province;
+import com.example.coolweather.gson.Weather;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,7 +47,10 @@ public class Utility {
                     City city = new City();
                     city.setCityName(cityObject.getString("name"));
                     city.setCityCode(cityObject.getInt("id"));
+                    city.setProvinceId(provinceId);
                     city.save();
+                    Log.d("response", cityObject.getString("name"));
+                    Log.d("response",allCities.length()+"" );
                 }
                 return true;
             } catch (JSONException e) {
@@ -72,5 +78,17 @@ public class Utility {
             }
         }
         return false;
+    }
+
+    public static Weather handleWeatherResponse(String response) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent, Weather.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

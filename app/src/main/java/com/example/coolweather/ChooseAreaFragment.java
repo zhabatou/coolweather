@@ -1,12 +1,14 @@
 package com.example.coolweather;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import android.widget.Toast;
 import com.example.coolweather.db.City;
 import com.example.coolweather.db.Country;
 import com.example.coolweather.db.Province;
+import com.example.coolweather.gson.Weather;
 import com.example.coolweather.util.HttpUtil;
 import com.example.coolweather.util.Utility;
 
@@ -80,9 +83,16 @@ public class ChooseAreaFragment extends Fragment {
                     selectedProvince = provinceList.get(positon);
                     queryCities();
                 } else if (currentLevel == LEVEL_CITY) {
-                    selectedCity = provinceList.get(positon);
+                    selectedCity = cityList.get(positon);
                     queryCountries();
+                } else if (currentLevel == LEVEL_COUNTRY) {
+                    String weatherId = countryList.get(positon).getWeatherId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
+
             }
         });
 
@@ -123,6 +133,7 @@ public class ChooseAreaFragment extends Fragment {
         titilText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
         cityList = DataSupport.where("provinceid = ?", String.valueOf(selectedProvince.getId())).find(City.class);
+        Log.d("response",cityList.size()+"");
         if (cityList.size() > 0) {
             dataList.clear();
             for (City city : cityList) {
@@ -180,10 +191,13 @@ public class ChooseAreaFragment extends Fragment {
                 String responseText = response.body().string();
                 boolean result = false;
                 if ("province".equals(type)) {
+                    Log.d("response","province");
                     result = Utility.handleProvinceResponce(responseText);
                 } else if ("city".equals(type)) {
+                    Log.d("response","city");
                     result = Utility.handCityResponse(responseText,selectedProvince.getId());
                 } else if ("country".equals(type)) {
+                    Log.d("response","country");
                     result = Utility.handleCountryResponse(responseText,selectedCity.getId());
                 }
                 if (result) {
